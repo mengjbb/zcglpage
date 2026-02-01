@@ -5,31 +5,61 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>设备资产信息管理</title>
     <style>
-        /* ========== 全局配置变量（修改这里即可调整：LOGO/标题字体/样式/背景图）========== */
+        /* ========== 全局配置变量（新增标题位置配置项）========== */
         :root {
-            /* LOGO PC端配置（与标题完全独立） */
-            --logo-pc-width: 200px;    /* PC端LOGO宽度 */
-            --logo-pc-height: 200px;   /* PC端LOGO高度 */
-            --logo-pc-left: 0px;       /* PC端LOGO距左侧距离（可改px/%，负数向右移） */
-            --logo-pc-top: 15%;        /* PC端LOGO垂直位置（50%为标题区垂直居中） */
+            /* LOGO PC端配置 */
+            --logo-pc-width: 200px;
+            --logo-pc-height: 200px;
+            --logo-pc-left: 10px;
+            --logo-pc-top: 15%;
             
-            /* LOGO 移动端配置（与标题完全独立） */
-            --logo-mobile-width: 100px;  /* 移动端LOGO宽度 */
-            --logo-mobile-height: 100px; /* 移动端LOGO高度 */
-            --logo-mobile-left: 0px;    /* 移动端LOGO距左侧距离 */
-            --logo-mobile-top: 15%;     /* 移动端LOGO垂直位置 */
+            /* LOGO 移动端配置 */
+            --logo-mobile-width: 70px;
+            --logo-mobile-height: 70px;
+            --logo-mobile-left: 5px;
+            --logo-mobile-top: 10%;
 
-            /* 标题字体配置（新增：独立可调，PC/移动端分开设置） */
-            --title-pc-font-size: 2.2rem;  /* PC端标题字体大小（rem适配，推荐1.8-3rem） */
-            --title-mobile-font-size: 1.5rem;/* 移动端标题字体大小 */
-            --title-font-weight: 700;      /* 标题字重（400常规，700加粗） */
-            --title-color: #333;           /* 标题字体颜色 */
+            /* 标题字体配置 */
+            --title-pc-font-size: 2.2rem;
+            --title-mobile-font-size: 1.5rem;
+            --title-font-weight: 700;
+            --title-color: #333;
+
+            /* 标题背景容器大小配置 */
+            --title-container-pc-height: 220px;
+            --title-container-mobile-height: 120px;
+            --title-container-width: 100%;
+
+            /* ===== 核心新增：标题位置自由配置（支持px/%单位） ===== */
+            --title-position-top: 87%;    /* 标题垂直位置（相对于标题背景容器） */
+            --title-position-left: 50%;   /* 标题水平位置（相对于标题背景容器） */
+            --title-position-transform-x: -50%; /* 水平偏移补偿（居中用-50%，左对齐用0） */
+            --title-position-transform-y: -50%; /* 垂直偏移补偿（居中用-50%，上对齐用0） */
+            --title-position-margin: 0;   /* 标题额外外边距（可选） */
             
-            /* 其他配置 */
-            --table-img-pc-size: 80px;  /* PC端图片列大小 */
-            --table-img-mobile-size: 50px; /* 移动端图片列大小 */
-            /* 背景图配置（铺满不裁剪） */
-            --bg-opacity: 0.5;          /* 背景图透明度（0-1，0完全透明，1不透明） */
+            /* 表格列宽统一配置 */
+            --date-col-width: 100px;
+            --person-col-width: 90px;
+            --remark-col-width: 100px;
+            --img-cell-pc-width: 200px;
+            --img-cell-pc-height: 80px;
+            --img-cell-mobile-width: 150px;
+            --img-cell-mobile-height: 50px;
+            --img-fit-mode: cover;
+            /* 设备主体图片单元格尺寸（PC+移动端） */
+            --device-img-cell-pc-width: 500px;
+            --device-img-cell-pc-height: 240px;
+            --device-img-cell-mobile-width: 300px;
+            --device-img-cell-mobile-height: 160px;
+            
+            /* 其他基础配置 */
+            --bg-opacity: 1;
+            --content-bg-img: url("bgbj.jpg"); /* 表格区域背景图片（自行替换路径） */
+            --content-bg-opacity: 0.6; /* 表格区域背景透明度 */
+            --table-border-width: 2px; /* 表格框线粗细 */
+            --table-border-color: #ccc; /* 表格框线颜色 */
+            --th-bg-opacity: 0.5; /* 表头单元格底色透明度 */
+            --td-bg-opacity: 0.5; /* 内容单元格底色透明度 */
         }
 
         * {
@@ -44,7 +74,9 @@
             margin: 0 auto;
             padding: 10px;
             background-color: #f5f5f5;
-            font-size: 14px; /* 基础字体 */
+            font-size: 14px;
+            overflow: hidden;
+            height: 100vh;
         }
         .device-box {
             background: #fff;
@@ -52,6 +84,10 @@
             border-radius: 8px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.08);
             margin-bottom: 15px;
+            position: relative;
+            height: 100vh;
+            overflow: hidden;
+            margin: 0;
         }
         h2 {
             color: #444;
@@ -59,49 +95,133 @@
             padding-bottom: 8px;
             border-bottom: 1px solid #eee;
             font-size: 1.2rem;
+            position: relative;
+            z-index: 4;
         }
-        /* 表格容器：移动端横向滚动 */
         .table-container {
             width: 100%;
             overflow-x: auto;
-            -webkit-overflow-scrolling: touch; /* 移动端顺滑滚动 */
+            -webkit-overflow-scrolling: touch;
             margin: 10px 0;
+            position: relative;
+            z-index: 4;
         }
         table {
             width: 100%;
-            min-width: 600px; /* 保证表格最小宽度，移动端可滚动 */
+            min-width: 600px;
             border-collapse: collapse;
+            position: relative;
+            z-index: 4;
         }
         th, td {
-            border: 1px solid #ddd;
-            padding: 8px 6px; /* 减小单元格内边距 */
+            border: var(--table-border-width) solid var(--table-border-color);
+            padding: 8px 6px;
             text-align: center !important;
             vertical-align: middle;
-            font-size: 13px; /* 表格字体缩小 */
+            font-size: 13px;
+            position: relative;
+            z-index: 4;
         }
         th {
-            background-color: #f8f8f8;
-            white-space: nowrap; /* 表头不换行 */
+            background-color: rgba(248, 248, 248, var(--th-bg-opacity));
+            white-space: nowrap;
         }
         td {
-            word-break: break-all; /* 内容自动换行 */
+            background-color: rgba(255, 255, 255, var(--td-bg-opacity));
+            word-break: break-all;
         }
 
-        /* ========== LOGO+标题布局（核心：标题始终居中+LOGO独立+背景铺满不裁剪）========== */
-        .title-container {
+        /* 表格列宽统一配置 */
+        #checkTable th:nth-child(1), #checkTable td:nth-child(1),
+        #replaceTable th:nth-child(1), #replaceTable td:nth-child(1),
+        #repairTable th:nth-child(1), #repairTable td:nth-child(1) {
+            width: var(--date-col-width);
+            white-space: nowrap;
+        }
+        #checkTable th:nth-child(4), #checkTable td:nth-child(4),
+        #replaceTable th:nth-child(4), #replaceTable td:nth-child(4),
+        #repairTable th:nth-child(4), #repairTable td:nth-child(4) {
+            width: var(--person-col-width);
+            white-space: nowrap;
+        }
+        #checkTable th:last-child, #checkTable td:last-child,
+        #replaceTable th:last-child, #replaceTable td:last-child,
+        #repairTable th:last-child, #repairTable td:last-child {
+            width: var(--remark-col-width);
+        }
+
+        /* 图片单元格样式 */
+        #checkTable .img-cell, #replaceTable .img-cell, #repairTable .img-cell {
+            width: var(--img-cell-pc-width);
+            height: var(--img-cell-pc-height);
+            padding: 0 !important;
+            vertical-align: middle;
+            overflow: hidden;
             position: relative;
+            z-index: 4;
+        }
+        #deviceBaseInfoTable .device-img-cell {
+            width: var(--device-img-cell-pc-width);
+            height: var(--device-img-cell-pc-height);
+            padding: 0 !important;
+            vertical-align: middle;
+            overflow: hidden;
+            border: var(--table-border-width) solid var(--table-border-color);
+            position: relative;
+            z-index: 4;
+        }
+        .table-img {
+            width: 100%;
+            height: 100%;
+            object-fit: var(--img-fit-mode);
+            object-position: center;
+            border-radius: 4px;
+            cursor: pointer;
+            border: 1px solid #eee;
+            transition: all 0.2s;
+            display: block;
+            transform-origin: center center;
+            position: relative;
+            z-index: 4;
+        }
+        .table-img:hover {
+            transform: scale(1.05);
+            border-color: #2196F3;
+        }
+        .no-img {
+            color: #999;
+            font-size: 12px;
+            display: inline-block;
+            width: 100%;
+            height: 100%;
+            line-height: var(--img-cell-pc-height);
+            position: relative;
+            z-index: 4;
+        }
+        #deviceBaseInfoTable .no-img {
+            line-height: var(--device-img-cell-pc-height);
+            font-size: 14px;
+            position: relative;
+            z-index: 4;
+        }
+
+        /* ========== 核心修改：标题位置支持变量自由调整 ========== */
+        .title-container {
+            position: fixed !important;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 998;
             margin-bottom: 20px;
-            min-height: var(--logo-pc-height); /* 按LOGO高度定标题区最小高度 */
-            display: flex;
-            /* 标题水平+垂直绝对居中（核心），不受LOGO影响 */
-            align-items: center;
-            justify-content: center;
-            /* 背景铺满不裁剪 */
-            background: url("background.jpg") no-repeat center center;
+            width: var(--title-container-width);
+            height: var(--title-container-pc-height);
+            /* 父容器开启相对定位，作为标题绝对定位的参考 */
+            position: relative;
+            background: url("btbj.jpg") no-repeat center center;
             background-size: 100% 100%;
             background-color: transparent;
         }
-        /* 背景透明遮罩层（实现透明度，不裁剪图片） */
+        /* 背景透明遮罩层 */
         .bg-mask {
             position: absolute;
             top: 0;
@@ -113,7 +233,7 @@
             pointer-events: none;
             z-index: 1;
         }
-        /* LOGO样式（与标题完全独立，不影响标题居中） */
+        /* LOGO样式 */
         .custom-logo {
             position: absolute;
             left: var(--logo-pc-left);
@@ -121,35 +241,26 @@
             transform: translateY(-50%);
             width: var(--logo-pc-width);
             height: var(--logo-pc-height);
-            object-fit: contain; /* 保持LOGO比例 */
-            z-index: 3; /* LOGO在最上层 */
+            object-fit: contain;
+            z-index: 3;
         }
-        /* 标题核心样式（独立配置，始终居中） */
+        /* 标题核心样式：通过全局变量控制上下左右位置 */
         .main-title {
-            margin: 0; /* 清除默认边距，保证居中 */
-            padding: 0 20px; /* 左右留空，避免贴边 */
-            font-size: var(--title-pc-font-size); /* 调用全局配置字体大小 */
+            margin: var(--title-position-margin);
+            padding: 0 20px;
+            font-size: var(--title-pc-font-size);
             font-weight: var(--title-font-weight);
             color: var(--title-color);
-            z-index: 3; /* 标题在最上层 */
-            position: relative;
-            white-space: nowrap; /* 标题不换行 */
+            z-index: 3;
+            /* 绝对定位 + 变量控制位置 */
+            position: absolute;
+            top: var(--title-position-top);
+            left: var(--title-position-left);
+            /* 偏移补偿：实现精准对齐（居中/左对齐/右对齐） */
+            transform: translate(var(--title-position-transform-x), var(--title-position-transform-y));
+            white-space: nowrap;
         }
 
-        /* ========== 图片列样式 ========== */
-        .table-img {
-            width: var(--table-img-pc-size);
-            height: var(--table-img-pc-size);
-            object-fit: cover;
-            border-radius: 4px;
-            cursor: pointer;
-            border: 1px solid #eee;
-            transition: all 0.2s;
-        }
-        .table-img:hover {
-            transform: scale(1.05);
-            border-color: #2196F3;
-        }
         /* 图片预览弹窗 */
         .img-preview-modal {
             position: fixed;
@@ -186,9 +297,44 @@
             text-align: center;
             line-height: 35px;
         }
-        .no-img {
-            color: #999;
-            font-size: 12px;
+
+        /* ========== 表格区域独立背景容器 ========== */
+        .table-bg-container {
+            position: fixed;
+            top: var(--title-container-pc-height);
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 2;
+            width: var(--title-container-width);
+            height: calc(100vh - var(--title-container-pc-height));
+            background: var(--content-bg-img) no-repeat center center;
+            background-size: cover;
+            padding: 0;
+            margin: 0;
+        }
+        .table-bg-mask {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #fff;
+            opacity: calc(1 - var(--content-bg-opacity));
+            pointer-events: none;
+            z-index: 3;
+        }
+        .table-scroll-container {
+            position: fixed;
+            top: var(--title-container-pc-height);
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 4;
+            width: var(--title-container-width);
+            height: calc(100vh - var(--title-container-pc-height));
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            padding: 15px;
+            box-sizing: border-box;
         }
 
         /* ========== 移动端适配（768px以下）========== */
@@ -198,8 +344,7 @@
                 font-size: 13px;
             }
             .device-box {
-                padding: 10px;
-                margin-bottom: 10px;
+                padding: 0;
             }
             h2 {
                 font-size: 1rem;
@@ -208,14 +353,7 @@
             th, td {
                 padding: 6px 4px;
                 font-size: 12px;
-            }
-
-            /* 移动端LOGO独立配置（不影响标题） */
-            .title-container {
-                min-height: var(--logo-mobile-height);
-                /* 移动端背景铺满不裁剪 */
-                background: url("background.jpg") no-repeat center center;
-                background-size: 100% 100%;
+                border: var(--table-border-width) solid var(--table-border-color);
             }
             .custom-logo {
                 left: var(--logo-mobile-left);
@@ -223,15 +361,42 @@
                 width: var(--logo-mobile-width);
                 height: var(--logo-mobile-height);
             }
-            /* 移动端标题字体大小独立配置（核心） */
             .main-title {
                 font-size: var(--title-mobile-font-size);
+                /* 移动端标题位置可单独配置（可选） */
+                top: var(--title-position-top);
+                left: var(--title-position-left);
+                transform: translate(var(--title-position-transform-x), var(--title-position-transform-y));
             }
-
-            /* 图片列 移动端缩小 */
-            .table-img {
-                width: var(--table-img-mobile-size);
-                height: var(--table-img-mobile-size);
+            .title-container {
+                height: var(--title-container-mobile-height);
+            }
+            #checkTable .img-cell, #replaceTable .img-cell, #repairTable .img-cell {
+                width: var(--img-cell-mobile-width);
+                height: var(--img-cell-mobile-height);
+                overflow: hidden;
+            }
+            .no-img {
+                line-height: var(--img-cell-mobile-height);
+            }
+            #deviceBaseInfoTable .device-img-cell {
+                width: var(--device-img-cell-mobile-width);
+                height: var(--device-img-cell-mobile-height);
+            }
+            #deviceBaseInfoTable .no-img {
+                line-height: var(--device-img-cell-mobile-height);
+                font-size: 12px;
+            }
+            .table-bg-container {
+                top: var(--title-container-mobile-height);
+                height: calc(100vh - var(--title-container-mobile-height));
+                width: var(--title-container-width);
+            }
+            .table-scroll-container {
+                top: var(--title-container-mobile-height);
+                height: calc(100vh - var(--title-container-mobile-height));
+                width: var(--title-container-width);
+                padding: 10px;
             }
         }
 
@@ -240,9 +405,13 @@
             :root {
                 --logo-pc-width: 120px;
                 --logo-pc-height: 120px;
-                --table-img-pc-size: 60px;
-                --title-pc-font-size: 1.8rem; /* 平板端可单独调整标题字体大小 */
-                /* --bg-opacity: 0.15; */
+                --img-cell-pc-width: 60px;
+                --img-cell-pc-height: 60px;
+                --title-pc-font-size: 1.8rem;
+                --content-bg-opacity: 0.2;
+                --table-border-width: 1.5px;
+                --device-img-cell-pc-width: 150px;
+                --device-img-cell-pc-height: 200px;
             }
             h2 {
                 font-size: 1.1rem;
@@ -251,33 +420,39 @@
     </style>
 </head>
 <body>
-    <!-- 设备信息展示模块 -->
-    <div class="device-box" id="deviceBox">
-        <!-- LOGO+标题容器（标题居中+LOGO独立+背景铺满不裁剪） -->
+    <div class="device-box">
         <div class="title-container">
             <div class="bg-mask"></div>
             <img src="logo.jpg" class="custom-logo" alt="设备管理系统LOGO">
             <h1 class="main-title">设备资产信息管理</h1>
         </div>
-        
-        <!-- 基础资产信息（加滚动容器） -->
-        <h2>基础资产信息</h2>
-        <div class="table-container">
-            <table id="deviceBaseInfoTable">
-                <tr><th>设备编号</th><td>ZQXN-2026-001</td></tr>
-                <tr><th>设备名称</th><td>挤压设备</td></tr>
-                <tr><th>使用部门</th><td>PACK生产</td></tr>
-                <tr><th>安装日期</th><td>2026-01-20</td></tr>
-                <tr><th>使用寿命</th><td>10年</td></tr>
-                <tr><th>责任人</th><td>设备部-张三</td></tr>
-            </table>
+
+        <div class="table-bg-container">
+            <div class="table-bg-mask"></div>
         </div>
 
-        <!-- 动态生成的记录表区域 -->
-        <div id="recordTablesContainer"></div>
+        <div class="table-scroll-container">
+            <h2>基础资产信息</h2>
+            <div class="table-container">
+                <table id="deviceBaseInfoTable">
+                    <tr>
+                        <th>设备编号</th><td>ZQXN-2026-001</td>
+                        <th rowspan="6">设备主体</th>
+                        <td rowspan="6" class="device-img-cell">
+                            <img src="device-main.jpg" alt="设备主体图片" class="table-img" onclick="openImgPreview('device-main.jpg')">
+                        </td>
+                    </tr>
+                    <tr><th>设备名称</th><td>挤压设备</td></tr>
+                    <tr><th>使用部门</th><td>PACK生产</td></tr>
+                    <tr><th>安装日期</th><td>2026-01-20</td></tr>
+                    <tr><th>使用寿命</th><td>10年</td></tr>
+                    <tr><th>责任人</th><td>设备部-张三</td></tr>
+                </table>
+            </div>
+            <div id="recordTablesContainer"></div>
+        </div>
     </div>
 
-    <!-- 图片预览弹窗 -->
     <div class="img-preview-modal" id="imgPreviewModal" onclick="closeImgPreview()">
         <div class="img-preview-content" onclick="event.stopPropagation()">
             <span class="close-preview" id="closePreviewBtn">&times;</span>
@@ -286,7 +461,6 @@
     </div>
 
     <script>
-        // ===================== 核心配置区 =====================
         const RECORD_TABLE_CONFIGS = {
             checkRecords: {
                 title: "定期点检记录",
@@ -314,11 +488,11 @@
                     { key: "reason", label: "更换原因" },
                     { key: "name", label: "更换人" },
                     { key: "img", label: "更换图片", type: "img" },
-                      { key: "remark", label: "备注" }
+                    { key: "remark", label: "备注" }
                 ],
                 rows: [
                     { date: "2026-01-10", part: "密封圈", reason: "老化破损", name: "王五", img: "replace1.jpg" },
-                    { date: "2026-01-22", part: "轴承", reason: "磨损严重", name: "赵六", img: "" },
+                    { date: "2026-01-22", part: "轴承", reason: "磨损严重", name: "赵六", img: "", remark: "无" },
                     { date: "2026-02-05", part: "液压油封", reason: "漏油", name: "张三", img: "replace2.jpg" }
                 ]
             },
@@ -330,19 +504,16 @@
                     { key: "content", label: "维修内容" },
                     { key: "fault", label: "故障描述" },
                     { key: "engineer", label: "维修工程师" },
-                    { key: "status", label: "维修状态" },
                     { key: "img", label: "维修图片", type: "img" },
-                      { key: "remark", label: "备注" }
+                    { key: "remark", label: "备注" }
                 ],
                 rows: [
-                    { date: "2026-02-02", content: "电机异响维修、轴承更换", fault: "电机轴承磨损导致异响", engineer: "钱七", status: "已完成", img: "repair1.jpg" },
-                    { date: "2026-02-10", content: "液压系统维修、漏油处理", fault: "液压油管接头松动导致漏油", engineer: "孙八", status: "已完成", img: "repair2.jpg" }
+                    { date: "2026-02-02", content: "电机异响维修、轴承更换", fault: "电机轴承磨损导致异响", engineer: "钱七",  img: "repair1.jpg" },
+                    { date: "2026-02-10", content: "液压系统维修、漏油处理", fault: "液压油管接头松动导致漏油", engineer: "孙八",  img: "repair2.jpg" }
                 ]
             }
         };
-        // ===================== 配置区结束 =====================
 
-        // 动态生成所有记录表（带滚动容器）
         function generateRecordTablesHtml() {
             const container = document.getElementById('recordTablesContainer');
             let html = '';
@@ -354,7 +525,6 @@
             container.innerHTML = html;
         }
 
-        // 渲染指定表格
         function renderTable(tableKey) {
             const config = RECORD_TABLE_CONFIGS[tableKey];
             const table = document.getElementById(config.tableId);
@@ -374,8 +544,8 @@
                     const cellValue = item[col.key] || '';
                     if (col.type === 'img') {
                         cellHtml += cellValue ? 
-                            `<td><img src="${cellValue}" alt="${col.label}" class="table-img" onclick="openImgPreview('${cellValue}')"></td>` :
-                            `<td><span class="no-img">暂无图片</span></td>`;
+                            `<td class="img-cell"><img src="${cellValue}" alt="${col.label}" class="table-img" onclick="openImgPreview('${cellValue}')"></td>` :
+                            `<td class="img-cell"><span class="no-img">暂无图片</span></td>`;
                     } else {
                         cellHtml += `<td>${cellValue}</td>`;
                     }
@@ -393,7 +563,6 @@
             }
         }
 
-        // 图片预览相关
         function openImgPreview(imgSrc) {
             const modal = document.getElementById('imgPreviewModal');
             const previewImg = document.getElementById('previewImg');
@@ -407,14 +576,12 @@
             document.body.style.overflow = "auto";
         }
 
-        // 渲染所有表格
         function renderAllTables() {
             for (const tableKey in RECORD_TABLE_CONFIGS) {
                 renderTable(tableKey);
             }
         }
 
-        // 页面初始化
         window.onload = function() {
             generateRecordTablesHtml();
             renderAllTables();
