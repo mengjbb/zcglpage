@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>设备资产信息管理</title>
     <style>
-        /* ========== 全局配置变量（新增标题位置配置项）========== */
+        /* ========== 全局配置变量（核心优化：PC/移动端标题位置独立配置）========== */
         :root {
             /* LOGO PC端配置 */
             --logo-pc-width: 200px;
@@ -26,16 +26,23 @@
             --title-color: #333;
 
             /* 标题背景容器大小配置 */
-            --title-container-pc-height: 250px;
+            --title-container-pc-height: 220px;
             --title-container-mobile-height: 150px;
             --title-container-width: 100%;
 
-            /* ===== 核心新增：标题位置自由配置（支持px/%单位） ===== */
-            --title-position-top: 88%;    /* 标题垂直位置（相对于标题背景容器） */
-            --title-position-left: 50%;   /* 标题水平位置（相对于标题背景容器） */
-            --title-position-transform-x: -50%; /* 水平偏移补偿（居中用-50%，左对齐用0） */
-            --title-position-transform-y: -50%; /* 垂直偏移补偿（居中用-50%，上对齐用0） */
-            --title-position-margin: 0;   /* 标题额外外边距（可选） */
+            /* ===== PC端标题位置独立配置（支持px/%单位） ===== */
+            --title-pc-top: 83%;
+            --title-pc-left: 50%;
+            --title-pc-transform-x: -50%;
+            --title-pc-transform-y: -50%;
+            --title-pc-margin: 0;
+            
+            /* ===== 移动端标题位置独立配置（支持px/%单位） ===== */
+            --title-mobile-top: 83%;
+            --title-mobile-left: 50%;
+            --title-mobile-transform-x: -50%;
+            --title-mobile-transform-y: -50%;
+            --title-mobile-margin: 0;
             
             /* 表格列宽统一配置 */
             --date-col-width: 100px;
@@ -205,7 +212,7 @@
             z-index: 4;
         }
 
-        /* ========== 核心修改：标题位置支持变量自由调整 ========== */
+        /* ========== 标题核心样式：PC端使用独立配置变量 ========== */
         .title-container {
             position: fixed !important;
             top: 0;
@@ -215,7 +222,6 @@
             margin-bottom: 20px;
             width: var(--title-container-width);
             height: var(--title-container-pc-height);
-            /* 父容器开启相对定位，作为标题绝对定位的参考 */
             position: relative;
             background: url("btbj.jpg") no-repeat center center;
             background-size: 100% 100%;
@@ -244,20 +250,18 @@
             object-fit: contain;
             z-index: 3;
         }
-        /* 标题核心样式：通过全局变量控制上下左右位置 */
+        /* 主标题：PC端专属配置，移动端将在媒体查询中重写 */
         .main-title {
-            margin: var(--title-position-margin);
+            margin: var(--title-pc-margin);
             padding: 0 20px;
             font-size: var(--title-pc-font-size);
             font-weight: var(--title-font-weight);
             color: var(--title-color);
             z-index: 3;
-            /* 绝对定位 + 变量控制位置 */
             position: absolute;
-            top: var(--title-position-top);
-            left: var(--title-position-left);
-            /* 偏移补偿：实现精准对齐（居中/左对齐/右对齐） */
-            transform: translate(var(--title-position-transform-x), var(--title-position-transform-y));
+            top: var(--title-pc-top);
+            left: var(--title-pc-left);
+            transform: translate(var(--title-pc-transform-x), var(--title-pc-transform-y));
             white-space: nowrap;
         }
 
@@ -323,21 +327,23 @@
             pointer-events: none;
             z-index: 3;
         }
+        /* 核心优化1：修复移动端滚动 - 移除fixed，改用absolute+父容器relative */
         .table-scroll-container {
-            position: fixed;
+            position: absolute;
             top: var(--title-container-pc-height);
-            left: 50%;
-            transform: translateX(-50%);
+            left: 0;
             z-index: 4;
-            width: var(--title-container-width);
+            width: 100%;
             height: calc(100vh - var(--title-container-pc-height));
             overflow-y: auto;
             -webkit-overflow-scrolling: touch;
             padding: 15px;
             box-sizing: border-box;
+            /* 增加滚动惯性，提升移动端体验 */
+            scroll-behavior: smooth;
         }
 
-        /* ========== 移动端适配（768px以下）========== */
+        /* ========== 移动端适配（768px以下）核心优化 ========== */
         @media (max-width: 768px) {
             body {
                 padding: 5px;
@@ -345,6 +351,11 @@
             }
             .device-box {
                 padding: 0;
+                /* 核心优化2：父容器开启relative，作为表格滚动容器absolute定位的参考 */
+                position: relative;
+                width: 100%;
+                height: 100vh;
+                overflow: hidden;
             }
             h2 {
                 font-size: 1rem;
@@ -361,12 +372,13 @@
                 width: var(--logo-mobile-width);
                 height: var(--logo-mobile-height);
             }
+            /* 核心优化3：移动端标题使用独立配置变量，完全独立于PC端 */
             .main-title {
+                margin: var(--title-mobile-margin);
                 font-size: var(--title-mobile-font-size);
-                /* 移动端标题位置可单独配置（可选） */
-                top: var(--title-position-top);
-                left: var(--title-position-left);
-                transform: translate(var(--title-position-transform-x), var(--title-position-transform-y));
+                top: var(--title-mobile-top);
+                left: var(--title-mobile-left);
+                transform: translate(var(--title-mobile-transform-x), var(--title-mobile-transform-y));
             }
             .title-container {
                 height: var(--title-container-mobile-height);
@@ -392,11 +404,13 @@
                 height: calc(100vh - var(--title-container-mobile-height));
                 width: var(--title-container-width);
             }
+            /* 核心优化4：移动端表格滚动容器同步更新定位和高度 */
             .table-scroll-container {
                 top: var(--title-container-mobile-height);
                 height: calc(100vh - var(--title-container-mobile-height));
-                width: var(--title-container-width);
                 padding: 10px;
+                left: 0;
+                width: 100%;
             }
         }
 
@@ -412,6 +426,8 @@
                 --table-border-width: 1.5px;
                 --device-img-cell-pc-width: 150px;
                 --device-img-cell-pc-height: 200px;
+                /* 平板可单独调整标题位置，复用PC端变量 */
+                --title-pc-top: 80%;
             }
             h2 {
                 font-size: 1.1rem;
@@ -593,6 +609,3 @@
     </script>
 </body>
 </html>
-
-
-
