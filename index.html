@@ -2,683 +2,6 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <!-- 移动端视口配置：宽度自适应设备、初始缩放1.0、禁止用户缩放 -->
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>设备资产信息管理</title>
-    <style>
-        /* ========== 全局CSS变量配置区 - 所有可配置样式集中管理 ========== */
-        :root {
-            /* LOGO PC端尺寸/位置配置：支持px/%单位，统一修改生效 */
-            --logo-pc-width: 200px;
-            --logo-pc-height: 200px;
-            --logo-pc-left: 10px;
-            --logo-pc-top: 15%;
-            
-            /* LOGO 移动端尺寸/位置配置：768px以下设备生效 */
-            --logo-mobile-width: 70px;
-            --logo-mobile-height: 70px;
-            --logo-mobile-left: 5px;
-            --logo-mobile-top: 10%;
-
-            /* 标题字体基础配置：字号/粗细/颜色 */
-            --title-pc-font-size: 2.2rem;
-            --title-mobile-font-size: 1.5rem;
-            --title-font-weight: 700;
-            --title-color: #333;
-
-            /* 标题背景容器尺寸：PC/移动端高度区分，宽度100%自适应 */
-            --title-container-pc-height: 220px;
-            --title-container-mobile-height: 120px;
-            --title-container-width: 100%;
-
-            /* 核心：标题位置自由配置 - 基于标题容器的绝对定位，支持精准对齐 */
-            --title-position-top: 89%;    /* 垂直位置（相对标题容器） */
-            --title-position-left: 50%;   /* 水平位置（相对标题容器） */
-            --title-position-transform-x: -50%; /* 水平偏移补偿：-50%居中/0左对齐/100%右对齐 */
-            --title-position-transform-y: -50%; /* 垂直偏移补偿：-50%居中/0上对齐/100%下对齐 */
-            --title-position-margin: 0;   /* 标题额外外边距（可选扩展） */
-            
-            /* 表格列宽统一配置：不同类型列单独定义，便于全局修改 */
-            --date-col-width: 100px;      /* 日期列宽度 */
-            --person-col-width: 90px;     /* 操作人/负责人列宽度 */
-            --remark-col-width: 100px;    /* 备注列宽度 */
-            /* 普通图片单元格尺寸：PC/移动端区分 */
-            --img-cell-pc-width: 200px;
-            --img-cell-pc-height: 80px;
-            --img-cell-mobile-width: 150px;
-            --img-cell-mobile-height: 50px;
-            --img-fit-mode: cover;        /* 图片适配模式：cover填充/ contain完整显示 */
-            /* 设备主体图片单元格尺寸：单独放大配置，区分普通图片 */
-            --device-img-cell-pc-width: 500px;
-            --device-img-cell-pc-height: 240px;
-            --device-img-cell-mobile-width: 300px;
-            --device-img-cell-mobile-height: 160px;
-            
-            /* 背景与边框基础配置 */
-            --bg-opacity: 1;              /* 标题容器背景透明度（遮罩层反向计算） */
-            --content-bg-img: url("bgbj.jpg"); /* 表格区域背景图（需自行替换实际路径） */
-            --content-bg-opacity: 0.6;    /* 表格区域背景透明度 */
-            --table-border-width: 2px;    /* 表格边框粗细 */
-            --table-border-color: #ccc;   /* 表格边框颜色 */
-            --th-bg-opacity: 0.5;         /* 表头单元格背景透明度 */
-            --td-bg-opacity: 0.5;         /* 内容单元格背景透明度 */
-        }
-
-        /* ========== 全局样式重置 ========== */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box; /* 盒模型：边框/内边距计入宽高 */
-            font-family: "Microsoft Yahei", Arial, sans-serif; /* 统一中文字体，兼容英文 */
-        }
-        body {
-            width: 100%;
-            min-width: 320px; /* 最小宽度，适配小屏手机 */
-            margin: 0 auto; /* 水平居中 */
-            padding: 10px;
-            background-color: #f5f5f5; /* 页面基础背景色 */
-            font-size: 14px; /* 基础字号 */
-            overflow: hidden; /* 隐藏页面整体滚动 */
-            height: 100vh; /* 高度占满视口 */
-        }
-        /* 主容器：包裹所有内容 */
-        .device-box {
-            background: #fff; /* 白色背景 */
-            padding: 15px;
-            border-radius: 8px; /* 圆角 */
-            box-shadow: 0 2px 8px rgba(0,0,0,0.08); /* 轻微阴影，提升层次感 */
-            position: relative; /* 作为子元素绝对定位的参考 */
-            height: 100vh; /* 占满视口高度 */
-            overflow: hidden; /* 隐藏内部溢出 */
-            margin: 0; /* 清除默认外边距 */
-        }
-        /* 二级标题样式：各表格模块标题 */
-        h2 {
-            color: #444;
-            margin: 12px 0;
-            padding-bottom: 8px;
-            border-bottom: 1px solid #eee; /* 底部分隔线 */
-            font-size: 1.2rem;
-            position: relative;
-            z-index: 4; /* 提高层级，避免被背景层遮挡 */
-        }
-        /* 表格外层容器：处理表格横向滚动 */
-        .table-container {
-            width: 100%;
-            overflow-x: auto; /* 横向滚动 */
-            -webkit-overflow-scrolling: touch; /* 移动端弹性滚动，提升体验 */
-            margin: 10px 0;
-            position: relative;
-            z-index: 4; /* 避免被背景遮挡 */
-        }
-        /* 表格基础样式 */
-        table {
-            width: 100%;
-            min-width: 600px; /* 最小宽度，防止小屏表格过挤 */
-            border-collapse: collapse; /* 合并边框，避免双边框 */
-            position: relative;
-            z-index: 4;
-        }
-        /* 表格单元格基础样式：表头+内容单元格通用 */
-        th, td {
-            border: var(--table-border-width) solid var(--table-border-color); /* 使用全局变量定义边框 */
-            padding: 8px 6px;
-            text-align: center !important; /* 强制居中，优先级最高 */
-            vertical-align: middle; /* 垂直居中 */
-            font-size: 13px;
-            position: relative;
-            z-index: 4;
-        }
-        /* 表头单元格样式 */
-        th {
-            background-color: rgba(248, 248, 248, var(--th-bg-opacity)); /* 浅灰色背景+透明度 */
-            white-space: nowrap; /* 不换行，保证表头文字完整 */
-        }
-        /* 内容单元格样式 */
-        td {
-            background-color: rgba(255, 255, 255, var(--td-bg-opacity)); /* 白色背景+透明度 */
-            word-break: break-all; /* 强制换行，防止长文本溢出 */
-        }
-
-        /* ========== 表格列宽精准控制 ========== */
-        /* 日期列：所有表格的第1列统一宽度 */
-        #checkTable th:nth-child(1), #checkTable td:nth-child(1),
-        #replaceTable th:nth-child(1), #replaceTable td:nth-child(1),
-        #repairTable th:nth-child(1), #repairTable td:nth-child(1) {
-            width: var(--date-col-width);
-            white-space: nowrap; /* 日期不换行 */
-        }
-        /* 操作人列：所有表格的第4列统一宽度（点检人/更换人/维修工程师） */
-        #checkTable th:nth-child(4), #checkTable td:nth-child(4),
-        #replaceTable th:nth-child(4), #replaceTable td:nth-child(4),
-        #repairTable th:nth-child(4), #repairTable td:nth-child(4) {
-            width: var(--person-col-width);
-            white-space: nowrap; /* 人名不换行 */
-        }
-        /* 备注列：所有表格的最后一列统一宽度 */
-        #checkTable th:last-child, #checkTable td:last-child,
-        #replaceTable th:last-child, #replaceTable td:last-child,
-        #repairTable th:last-child, #repairTable td:last-child {
-            width: var(--remark-col-width);
-        }
-
-        /* ========== 图片单元格专属样式 ========== */
-        /* 普通图片单元格（点检/更换/维修图片） */
-        #checkTable .img-cell, #replaceTable .img-cell, #repairTable .img-cell {
-            width: var(--img-cell-pc-width);
-            height: var(--img-cell-pc-height);
-            padding: 0 !important; /* 清除内边距，避免图片间隙 */
-            vertical-align: middle;
-            overflow: hidden; /* 隐藏图片溢出部分 */
-            position: relative;
-            z-index: 4;
-        }
-        /* 设备主体图片单元格：单独放大配置 */
-        #deviceBaseInfoTable .device-img-cell {
-            width: var(--device-img-cell-pc-width);
-            height: var(--device-img-cell-pc-height);
-            padding: 0 !important;
-            vertical-align: middle;
-            overflow: hidden;
-            border: var(--table-border-width) solid var(--table-border-color);
-            position: relative;
-            z-index: 4;
-        }
-        /* 表格内图片基础样式 */
-        .table-img {
-            width: 100%;
-            height: 100%;
-            object-fit: var(--img-fit-mode); /* 使用全局变量控制适配模式 */
-            object-position: center; /* 图片居中显示 */
-            border-radius: 4px; /* 轻微圆角 */
-            cursor: pointer; /* 鼠标悬浮变手型，提示可点击预览 */
-            border: 1px solid #eee; /* 轻微边框 */
-            transition: all 0.2s; /* 过渡动画，提升交互体验 */
-            display: block; /* 清除图片默认行内间隙 */
-            transform-origin: center center; /* 缩放原点为中心 */
-            position: relative;
-            z-index: 4;
-        }
-        /* 图片悬浮效果：轻微放大+边框变色 */
-        .table-img:hover {
-            transform: scale(1.05); /* 放大1.05倍 */
-            border-color: #2196F3; /* 蓝色边框，提示可点击 */
-        }
-        /* 无图片占位符样式 */
-        .no-img {
-            color: #999; /* 浅灰色，弱化显示 */
-            font-size: 12px;
-            display: inline-block;
-            width: 100%;
-            height: 100%;
-            line-height: var(--img-cell-pc-height); /* 行高等于高度，垂直居中 */
-            position: relative;
-            z-index: 4;
-        }
-        /* 设备主体图片的无图片占位符：单独调整行高和字号 */
-        #deviceBaseInfoTable .no-img {
-            line-height: var(--device-img-cell-pc-height);
-            font-size: 14px;
-            position: relative;
-            z-index: 4;
-        }
-
-        /* ========== 标题区域核心样式：LOGO+主标题+背景 ========== */
-        .title-container {
-            position: fixed !important; /* 固定定位，始终在页面顶部 */
-            top: 0;
-            left: 50%;
-            transform: translateX(-50%); /* 水平居中 */
-            z-index: 998; /* 高层级，避免被其他内容遮挡 */
-            margin-bottom: 20px;
-            width: var(--title-container-width);
-            height: var(--title-container-pc-height);
-            position: relative; /* 作为子元素（LOGO/标题/遮罩）绝对定位的参考容器 */
-            background: url("btbj.jpg") no-repeat center center; /* 标题区域背景图 */
-            background-size: 100% 100%; /* 背景图拉伸填充容器 */
-            background-color: transparent; /* 透明背景，优先显示背景图 */
-        }
-        /* 标题容器背景透明遮罩层：用于调整背景图透明度，不影响子元素 */
-        .bg-mask {
-            position: absolute; /* 绝对定位，覆盖整个标题容器 */
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: #fff; /* 白色遮罩 */
-            opacity: calc(1 - var(--bg-opacity)); /* 透明度反向计算：bg-opacity越大，遮罩越淡 */
-            pointer-events: none; /* 穿透点击，不影响下方元素的交互 */
-            z-index: 1; /* 层级低于LOGO和标题 */
-        }
-        /* LOGO样式：基于全局变量配置位置和尺寸 */
-        .custom-logo {
-            position: absolute;
-            left: var(--logo-pc-left);
-            top: var(--logo-pc-top);
-            transform: translateY(-50%); /* 垂直居中 */
-            width: var(--logo-pc-width);
-            height: var(--logo-pc-height);
-            object-fit: contain; /* LOGO完整显示，不拉伸变形 */
-            z-index: 3; /* 层级高于遮罩，低于标题（可选调整） */
-        }
-        /* 主标题核心样式：通过全局变量实现位置自由调整 */
-        .main-title {
-            margin: var(--title-position-margin);
-            padding: 0 20px;
-            font-size: var(--title-pc-font-size);
-            font-weight: var(--title-font-weight);
-            color: var(--title-color);
-            z-index: 3; /* 层级高于遮罩和LOGO */
-            position: absolute; /* 绝对定位，基于标题容器 */
-            top: var(--title-position-top); /* 垂直位置由全局变量控制 */
-            left: var(--title-position-left); /* 水平位置由全局变量控制 */
-            transform: translate(var(--title-position-transform-x), var(--title-position-transform-y)); /* 偏移补偿，实现精准对齐 */
-            white-space: nowrap; /* 标题不换行 */
-        }
-
-        /* ========== 图片预览弹窗样式 ========== */
-        .img-preview-modal {
-            position: fixed; /* 固定定位，覆盖整个视口 */
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.8); /* 黑色半透明背景，突出预览图片 */
-            z-index: 9999; /* 最高层级，确保覆盖所有内容 */
-            display: none; /* 默认隐藏 */
-            align-items: center; /* 垂直居中预览内容 */
-            justify-content: center; /* 水平居中预览内容 */
-            padding: 15px; /* 左右内边距，避免图片贴边 */
-        }
-        /* 预览图片容器 */
-        .img-preview-content {
-            position: relative; /* 作为关闭按钮绝对定位的参考 */
-            max-width: 95%; /* 最大宽度，不超过视口95% */
-            max-height: 80vh; /* 最大高度，不超过视口80% */
-        }
-        /* 预览图片样式：自适应容器，保持比例 */
-        .preview-img {
-            width: 100%;
-            height: auto;
-            border-radius: 8px; /* 圆角 */
-        }
-        /* 关闭预览按钮样式 */
-        .close-preview {
-            position: absolute;
-            top: -35px; /* 位于图片容器上方 */
-            right: 0;
-            color: #fff; /* 白色 */
-            font-size: 28px;
-            cursor: pointer; /* 手型光标 */
-            width: 35px;
-            height: 35px;
-            text-align: center; /* 文字居中 */
-            line-height: 35px; /* 行高等于高度，垂直居中 */
-        }
-
-        /* ========== 表格区域独立布局：背景层+滚动内容层 ========== */
-        /* 表格区域背景容器：固定定位，仅显示背景图和遮罩 */
-        .table-bg-container {
-            position: fixed;
-            top: var(--title-container-pc-height); /* 顶部对齐标题容器底部 */
-            left: 50%;
-            transform: translateX(-50%); /* 水平居中 */
-            z-index: 2; /* 层级低于内容层，高于页面背景 */
-            width: var(--title-container-width);
-            height: calc(100vh - var(--title-container-pc-height)); /* 高度占满标题容器下方的视口 */
-            background: var(--content-bg-img) no-repeat center center; /* 表格区域背景图 */
-            background-size: cover; /* 背景图等比覆盖，保持比例 */
-            padding: 0;
-            margin: 0;
-        }
-        /* 表格区域背景遮罩层：调整背景图透明度，不影响表格内容 */
-        .table-bg-mask {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: #fff;
-            opacity: calc(1 - var(--content-bg-opacity)); /* 透明度反向计算 */
-            pointer-events: none; /* 穿透点击 */
-            z-index: 3; /* 层级高于背景容器，低于表格内容 */
-        }
-        /* 表格滚动内容容器：固定定位，承载所有表格内容，处理垂直滚动 */
-        .table-scroll-container {
-            position: fixed;
-            top: var(--title-container-pc-height); /* 顶部对齐标题容器底部 */
-            left: 50%;
-            transform: translateX(-50%); /* 水平居中 */
-            z-index: 4; /* 最高层级，确保表格内容不被遮挡 */
-            width: var(--title-container-width);
-            height: calc(100vh - var(--title-container-pc-height)); /* 高度占满标题容器下方视口 */
-            overflow-y: auto; /* 垂直滚动，横向不滚动 */
-            -webkit-overflow-scrolling: touch; /* 移动端弹性滚动 */
-            padding: 15px; /* 内边距，避免内容贴边 */
-            box-sizing: border-box;
-        }
-
-        /* ========== 移动端适配：768px以下手机设备 ========== */
-        @media (max-width: 768px) {
-            body {
-                padding: 5px; /* 减小内边距 */
-                font-size: 13px; /* 减小基础字号 */
-            }
-            .device-box {
-                padding: 0; /* 清除内边距 */
-            }
-            h2 {
-                font-size: 1rem; /* 减小二级标题字号 */
-                margin: 10px 0; /* 减小外边距 */
-            }
-            th, td {
-                padding: 6px 4px; /* 减小单元格内边距 */
-                font-size: 12px; /* 减小单元格字号 */
-            }
-            /* 移动端LOGO：使用移动端全局变量配置 */
-            .custom-logo {
-                left: var(--logo-mobile-left);
-                top: var(--logo-mobile-top);
-                width: var(--logo-mobile-width);
-                height: var(--logo-mobile-height);
-            }
-            /* 移动端主标题：使用移动端字号，位置继承全局配置（可单独重写） */
-            .main-title {
-                font-size: var(--title-mobile-font-size);
-                top: var(--title-position-top);
-                left: var(--title-position-left);
-                transform: translate(var(--title-position-transform-x), var(--title-position-transform-y));
-            }
-            /* 移动端标题容器：使用移动端高度 */
-            .title-container {
-                height: var(--title-container-mobile-height);
-            }
-            /* 移动端普通图片单元格：使用移动端尺寸 */
-            #checkTable .img-cell, #replaceTable .img-cell, #repairTable .img-cell {
-                width: var(--img-cell-mobile-width);
-                height: var(--img-cell-mobile-height);
-                overflow: hidden;
-            }
-            /* 移动端无图片占位符：调整行高 */
-            .no-img {
-                line-height: var(--img-cell-mobile-height);
-            }
-            /* 移动端设备主体图片单元格：使用移动端尺寸 */
-            #deviceBaseInfoTable .device-img-cell {
-                width: var(--device-img-cell-mobile-width);
-                height: var(--device-img-cell-mobile-height);
-            }
-            /* 移动端设备主体图片占位符：调整行高和字号 */
-            #deviceBaseInfoTable .no-img {
-                line-height: var(--device-img-cell-mobile-height);
-                font-size: 12px;
-            }
-            /* 移动端表格背景容器：顶部对齐移动端标题容器，调整高度 */
-            .table-bg-container {
-                top: var(--title-container-mobile-height);
-                height: calc(100vh - var(--title-container-mobile-height));
-                width: var(--title-container-width);
-            }
-            /* 移动端表格滚动容器：顶部对齐移动端标题容器，调整高度和内边距 */
-            .table-scroll-container {
-                top: var(--title-container-mobile-height);
-                height: calc(100vh - var(--title-container-mobile-height));
-                width: var(--title-container-width);
-                padding: 10px; /* 减小内边距 */
-            }
-        }
-
-        /* ========== 平板适配：769px-1024px平板设备 ========== */
-        @media (min-width: 769px) and (max-width: 1024px) {
-            /* 重写全局变量，适配平板尺寸 */
-            :root {
-                --logo-pc-width: 120px;    /* 缩小LOGO */
-                --logo-pc-height: 120px;
-                --img-cell-pc-width: 60px; /* 缩小图片单元格 */
-                --img-cell-pc-height: 60px;
-                --title-pc-font-size: 1.8rem; /* 减小标题字号 */
-                --content-bg-opacity: 0.2; /* 降低表格背景透明度 */
-                --table-border-width: 1.5px; /* 减细表格边框 */
-                --device-img-cell-pc-width: 150px; /* 调整设备主体图片尺寸 */
-                --device-img-cell-pc-height: 200px;
-            }
-            /* 调整二级标题字号 */
-            h2 {
-                font-size: 1.1rem;
-            }
-        }
-    </style>
-</head>
-<body>
-    <!-- 页面主容器 -->
-    <div class="device-box">
-        <!-- 标题区域：LOGO+主标题+背景遮罩 -->
-        <div class="title-container">
-            <div class="bg-mask"></div> <!-- 背景遮罩层 -->
-            <img src="logo.jpg" class="custom-logo" alt="设备管理系统LOGO"> <!-- LOGO图片 -->
-            <h1 class="main-title">设备资产信息管理</h1> <!-- 页面主标题 -->
-        </div>
-
-        <!-- 表格区域背景容器：仅承载背景图和遮罩，无实际内容 -->
-        <div class="table-bg-container">
-            <div class="table-bg-mask"></div> <!-- 表格背景遮罩层 -->
-        </div>
-
-        <!-- 表格滚动内容容器：承载所有表格和标题，处理垂直滚动 -->
-        <div class="table-scroll-container">
-            <!-- 设备基础资产信息标题 -->
-            <h2>基础资产信息</h2>
-            <!-- 设备基础信息表格容器 -->
-            <div class="table-container">
-                <table id="deviceBaseInfoTable">
-                    <tr>
-                        <th>设备编号</th><td>ZQXN-2026-001</td>
-                        <th rowspan="6">设备主体</th> <!-- 跨6行 -->
-                        <td rowspan="6" class="device-img-cell"> <!-- 跨6行，设备主体图片单元格 -->
-                            <!-- 设备主体图片，点击触发预览 -->
-                            <img src="device-main.jpg" alt="设备主体图片" class="table-img" onclick="openImgPreview('device-main.jpg')">
-                        </td>
-                    </tr>
-                    <tr><th>设备名称</th><td>挤压设备</td></tr>
-                    <tr><th>使用部门</th><td>PACK生产</td></tr>
-                    <tr><th>安装日期</th><td>2026-01-20</td></tr>
-                    <tr><th>使用寿命</th><td>10年</td></tr>
-                    <tr><th>责任人</th><td>设备部-张三</td></tr>
-                </table>
-            </div>
-            <!-- 动态生成的记录表格容器：点检/更换/维修表格将插入此处 -->
-            <div id="recordTablesContainer"></div>
-        </div>
-    </div>
-
-    <!-- 图片预览弹窗：默认隐藏，点击图片后显示 -->
-    <div class="img-preview-modal" id="imgPreviewModal" onclick="closeImgPreview()">
-        <!-- 预览内容容器：阻止冒泡，避免点击图片关闭弹窗 -->
-        <div class="img-preview-content" onclick="event.stopPropagation()">
-            <span class="close-preview" id="closePreviewBtn">&times;</span> <!-- 关闭按钮 -->
-            <img src="" alt="图片预览" class="preview-img" id="previewImg"> <!-- 预览图片，src动态赋值 -->
-        </div>
-    </div>
-
-    <script>
-        // ========== 表格配置常量：所有动态表格的标题、列、数据统一管理 ==========
-        // 采用对象结构，键为表格标识，值为表格配置（标题/列/行数据）
-        const RECORD_TABLE_CONFIGS = {
-            // 定期点检记录表格配置
-            checkRecords: {
-                title: "定期点检记录", // 表格标题
-                tableId: "checkTable", // 表格ID（需唯一）
-                columns: [ // 列配置：key对应数据字段，label对应表头文字，type标记特殊列（如img）
-                    { key: "date", label: "点检日期" },
-                    { key: "content", label: "点检内容" },
-                    { key: "result", label: "点检结果" },
-                    { key: "name", label: "点检人" },
-                    { key: "img", label: "点检图片", type: "img" }, // type:img 标记为图片列
-                    { key: "remark", label: "备注" }
-                ],
-                rows: [ // 行数据：数组对象，每个对象的键对应columns的key
-                    { date: "2026-01-20", content: "设备运行状态检查、压力参数检测", result: "正常", name: "张三", remark: "无异常", img: "check1.jpg" },
-                    { date: "2026-01-25", content: "润滑系统检查、安全防护装置检查", result: "正常", name: "李四", remark: "润滑脂充足", img: "check2.jpg" },
-                    { date: "2026-02-01", content: "电气系统检查、机械传动部件检查", result: "异常", name: "张三", remark: "发现电机异响，已临时处理", img: "check3.jpg" }
-                ]
-            },
-            // 易损件更换记录表格配置
-            replaceRecords: {
-                title: "易损件更换记录",
-                tableId: "replaceTable",
-                columns: [
-                    { key: "date", label: "更换日期" },
-                    { key: "part", label: "易损件名称" },
-                    { key: "reason", label: "更换原因" },
-                    { key: "name", label: "更换人" },
-                    { key: "img", label: "更换图片", type: "img" },
-                    { key: "remark", label: "备注" }
-                ],
-                rows: [
-                    { date: "2026-01-10", part: "密封圈", reason: "老化破损", name: "王五", img: "replace1.jpg" },
-                    { date: "2026-01-22", part: "轴承", reason: "磨损严重", name: "赵六", img: "", remark: "无" }, // img为空，显示占位符
-                    { date: "2026-02-05", part: "液压油封", reason: "漏油", name: "张三", img: "replace2.jpg" }
-                ]
-            },
-            // 设备维修记录表格配置
-            repairRecords: {
-                title: "设备维修记录",
-                tableId: "repairTable",
-                columns: [
-                    { key: "date", label: "维修日期" },
-                    { key: "content", label: "维修内容" },
-                    { key: "fault", label: "故障描述" },
-                    { key: "engineer", label: "维修工程师" },
-                    { key: "img", label: "维修图片", type: "img" },
-                    { key: "remark", label: "备注" }
-                ],
-                rows: [
-                    { date: "2026-02-02", content: "电机异响维修、轴承更换", fault: "电机轴承磨损导致异响", engineer: "钱七",  img: "repair1.jpg" },
-                    { date: "2026-02-10", content: "液压系统维修、漏油处理", fault: "液压油管接头松动导致漏油", engineer: "孙八",  img: "repair2.jpg" }
-                ]
-            }
-        };
-
-        /**
-         * 生成动态表格的HTML结构：仅创建表格容器和标题，不渲染数据
-         * 作用：提前创建DOM结构，为后续渲染数据做准备
-         */
-        function generateRecordTablesHtml() {
-            // 获取表格容器DOM
-            const container = document.getElementById('recordTablesContainer');
-            let html = '';
-            // 遍历所有表格配置，生成对应的标题和表格容器
-            for (const tableKey in RECORD_TABLE_CONFIGS) {
-                const config = RECORD_TABLE_CONFIGS[tableKey];
-                html += `<h2>${config.title}</h2>`; // 表格标题
-                html += `<div class="table-container"><table id="${config.tableId}"></table></div>`; // 表格容器
-            }
-            // 将生成的HTML插入容器
-            container.innerHTML = html;
-        }
-
-        /**
-         * 渲染单个表格的完整内容：表头+行数据
-         * @param {string} tableKey - 表格配置的键（如checkRecords/replaceRecords）
-         */
-        function renderTable(tableKey) {
-            // 获取当前表格的配置
-            const config = RECORD_TABLE_CONFIGS[tableKey];
-            // 获取表格DOM
-            const table = document.getElementById(config.tableId);
-            // 获取行数据，若无数据则赋值为空数组
-            const rowsData = config.rows || [];
-
-            // 生成表头HTML
-            let headerHtml = '<tr>';
-            config.columns.forEach(col => {
-                headerHtml += `<th>${col.label}</th>`; // 遍历列配置，生成表头单元格
-            });
-            headerHtml += '</tr>';
-            // 将表头插入表格
-            table.innerHTML = headerHtml;
-
-            // 遍历行数据，生成表格内容行
-            rowsData.forEach((item) => {
-                const row = table.insertRow(-1); // 在表格最后插入一行
-                let cellHtml = '';
-                // 遍历列配置，生成每个单元格的内容
-                config.columns.forEach(col => {
-                    // 获取当前单元格的数值，若无则赋值为空字符串
-                    const cellValue = item[col.key] || '';
-                    // 判断是否为图片列，做不同处理
-                    if (col.type === 'img') {
-                        // 图片列：有图片则显示图片（点击预览），无图片则显示占位符
-                        cellHtml += cellValue ? 
-                            `<td class="img-cell"><img src="${cellValue}" alt="${col.label}" class="table-img" onclick="openImgPreview('${cellValue}')"></td>` :
-                            `<td class="img-cell"><span class="no-img">暂无图片</span></td>`;
-                    } else {
-                        // 普通列：直接显示数值
-                        cellHtml += `<td>${cellValue}</td>`;
-                    }
-                });
-                // 将单元格内容插入当前行
-                row.innerHTML = cellHtml;
-            });
-
-            // 无数据处理：若行数据为空，显示"暂无记录数据"
-            if (rowsData.length === 0) {
-                const emptyRow = table.insertRow(-1); // 插入空行
-                const emptyCell = emptyRow.insertCell(0); // 插入单元格
-                emptyCell.colSpan = config.columns.length; // 跨所有列
-                emptyCell.textContent = "暂无记录数据";
-                emptyCell.style.padding = "15px";
-                emptyCell.style.color = "#999";
-            }
-        }
-
-        /**
-         * 打开图片预览弹窗
-         * @param {string} imgSrc - 预览图片的路径
-         */
-        function openImgPreview(imgSrc) {
-            const modal = document.getElementById('imgPreviewModal');
-            const previewImg = document.getElementById('previewImg');
-            previewImg.src = imgSrc; // 为预览图片赋值路径
-            modal.style.display = "flex"; // 显示弹窗（flex布局实现居中）
-            document.body.style.overflow = "hidden"; // 隐藏页面滚动，避免弹窗后滚动页面
-        }
-
-        /**
-         * 关闭图片预览弹窗
-         */
-        function closeImgPreview() {
-            const modal = document.getElementById('imgPreviewModal');
-            modal.style.display = "none"; // 隐藏弹窗
-            document.body.style.overflow = "auto"; // 恢复页面滚动
-        }
-
-        /**
-         * 渲染所有动态表格：遍历配置，逐个渲染
-         */
-        function renderAllTables() {
-            for (const tableKey in RECORD_TABLE_CONFIGS) {
-                renderTable(tableKey);
-            }
-        }
-
-        // ========== 页面加载完成后执行：初始化所有功能 ==========
-        window.onload = function() {
-            generateRecordTablesHtml(); // 第一步：生成动态表格的HTML结构
-            renderAllTables(); // 第二步：渲染所有表格的完整内容
-            // 为关闭预览按钮绑定点击事件（冗余绑定，提升兼容性）
-            document.getElementById('closePreviewBtn').addEventListener('click', closeImgPreview);
-            // 绑定键盘ESC键：按下ESC关闭图片预览
-            document.addEventListener('keydown', function(e) {
-                if (e.key === 'Escape') closeImgPreview();
-            });
-        }
-    </script>
-</body>
-</html><!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>设备资产信息管理</title>
     <style>
@@ -742,9 +65,8 @@
             padding: 0;
             box-sizing: border-box;
             font-family: "Microsoft Yahei", Arial, sans-serif;
-            /* 核心优化1：全局启用硬件加速，提升滚动性能 */
-            transform: translateZ(0);
-            will-change: transform;
+            /* 硬件加速：仅关键元素启用，避免全局性能损耗 */
+            box-sizing: border-box !important;
         }
         body {
             width: 100%;
@@ -755,15 +77,19 @@
             font-size: 14px;
             overflow: hidden;
             height: 100vh;
-            /* 禁止系统默认滚动，避免冲突 */
-            overscroll-behavior: none;
+            overscroll-behavior: none; /* 禁止全局滚动溢出 */
+        }
+        /* 滚动时禁用所有hover/active效果，核心解决滚动重绘卡顿 */
+        body.is-scrolling * {
+            pointer-events: none !important;
+            transition: none !important;
+            animation: none !important;
         }
         .device-box {
             background: #fff;
             padding: 15px;
             border-radius: 8px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-            margin-bottom: 15px;
             position: relative;
             height: 100vh;
             overflow: hidden;
@@ -778,30 +104,44 @@
             position: relative;
             z-index: 4;
         }
-        /* 核心优化2：表格横向滚动容器优化 */
+        /* 表格横向滚动容器 - 深度优化 */
         .table-container {
             width: 100%;
             overflow-x: auto;
-            -webkit-overflow-scrolling: touch;
+            -webkit-overflow-scrolling: touch; /* 移动端惯性滚动 */
             margin: 10px 0;
             position: relative;
             z-index: 4;
-            /* 解决横向滚动与纵向滚动冲突 */
-            overscroll-behavior-x: contain;
-            /* 横向滚动惯性 */
+            overscroll-behavior-x: contain; /* 隔离横向滚动 */
+            touch-action: pan-x; /* 仅允许横向手势 */
             scroll-behavior: smooth;
-            /* 减少滚动延迟 */
-            touch-action: pan-x;
+            /* 硬件加速 */
+            transform: translateZ(0);
+            will-change: scroll-position;
+        }
+        /* 滚动条优化：隐藏但保留功能，提升体验 */
+        .table-container::-webkit-scrollbar,
+        .table-scroll-container::-webkit-scrollbar {
+            width: 4px;
+            height: 4px;
+        }
+        .table-container::-webkit-scrollbar-thumb,
+        .table-scroll-container::-webkit-scrollbar-thumb {
+            background: #ccc;
+            border-radius: 2px;
+        }
+        .table-container::-webkit-scrollbar-track,
+        .table-scroll-container::-webkit-scrollbar-track {
+            background: transparent;
         }
         table {
             width: 100%;
             min-width: 600px;
             border-collapse: collapse;
+            border-spacing: 0; /* 清除默认间距 */
+            table-layout: fixed; /* 固定布局，禁止动态计算列宽 */
             position: relative;
             z-index: 4;
-            /* 禁用表格布局算法，提升渲染速度 */
-            table-layout: fixed;
-            border-spacing: 0;
         }
         th, td {
             border: var(--table-border-width) solid var(--table-border-color);
@@ -811,13 +151,12 @@
             font-size: 13px;
             position: relative;
             z-index: 4;
-            /* 避免单元格内容重排影响滚动 */
             overflow: hidden;
             text-overflow: ellipsis;
+            white-space: nowrap; /* 统一文本处理，避免重排 */
         }
         th {
             background-color: rgba(248, 248, 248, var(--th-bg-opacity));
-            white-space: nowrap;
         }
         td {
             background-color: rgba(255, 255, 255, var(--td-bg-opacity));
@@ -829,13 +168,11 @@
         #replaceTable th:nth-child(1), #replaceTable td:nth-child(1),
         #repairTable th:nth-child(1), #repairTable td:nth-child(1) {
             width: var(--date-col-width);
-            white-space: nowrap;
         }
         #checkTable th:nth-child(4), #checkTable td:nth-child(4),
         #replaceTable th:nth-child(4), #replaceTable td:nth-child(4),
         #repairTable th:nth-child(4), #repairTable td:nth-child(4) {
             width: var(--person-col-width);
-            white-space: nowrap;
         }
         #checkTable th:last-child, #checkTable td:last-child,
         #replaceTable th:last-child, #replaceTable td:last-child,
@@ -843,7 +180,7 @@
             width: var(--remark-col-width);
         }
 
-        /* 图片单元格样式（保持原有） */
+        /* 图片单元格样式 - 修复布局和渲染 */
         #checkTable .img-cell, #replaceTable .img-cell, #repairTable .img-cell {
             width: var(--img-cell-pc-width);
             height: var(--img-cell-pc-height);
@@ -871,43 +208,42 @@
             border-radius: 4px;
             cursor: pointer;
             border: 1px solid #eee;
-            transition: all 0.2s;
             display: block;
             transform-origin: center center;
             position: relative;
             z-index: 4;
-            /* 图片预加载，避免滚动时加载卡顿 */
+            /* 图片渲染优化：优先速度，避免缩放卡顿 */
             image-rendering: optimizeSpeed;
+            backface-visibility: hidden;
         }
         .table-img:hover {
             transform: scale(1.05);
             border-color: #2196F3;
+            transition: all 0.2s ease; /* 明确过渡效果，避免闪烁 */
         }
         .no-img {
             color: #999;
             font-size: 12px;
-            display: inline-block;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             width: 100%;
             height: 100%;
-            line-height: var(--img-cell-pc-height);
             position: relative;
             z-index: 4;
+            line-height: 1.2; /* 修复文字垂直居中 */
         }
         #deviceBaseInfoTable .no-img {
-            line-height: var(--device-img-cell-pc-height);
             font-size: 14px;
-            position: relative;
-            z-index: 4;
         }
 
-        /* 标题核心样式（保持原有） */
+        /* 标题核心样式（保持原有，无问题） */
         .title-container {
             position: fixed !important;
             top: 0;
             left: 50%;
             transform: translateX(-50%);
             z-index: 998;
-            margin-bottom: 20px;
             width: var(--title-container-width);
             height: var(--title-container-pc-height);
             position: relative;
@@ -950,7 +286,7 @@
             white-space: nowrap;
         }
 
-        /* 图片预览弹窗（保持原有） */
+        /* 图片预览弹窗（修复点击穿透和布局） */
         .img-preview-modal {
             position: fixed;
             top: 0;
@@ -962,21 +298,24 @@
             display: none;
             align-items: center;
             justify-content: center;
-            padding: 15px;
+            padding: 20px;
+            backdrop-filter: blur(4px); /* 增加遮罩效果，无性能影响 */
         }
         .img-preview-content {
             position: relative;
             max-width: 95%;
             max-height: 80vh;
+            z-index: 10000; /* 避免被遮罩覆盖 */
         }
         .preview-img {
             width: 100%;
             height: auto;
             border-radius: 8px;
+            display: block;
         }
         .close-preview {
             position: absolute;
-            top: -35px;
+            top: -40px;
             right: 0;
             color: #fff;
             font-size: 28px;
@@ -985,6 +324,9 @@
             height: 35px;
             text-align: center;
             line-height: 35px;
+            background: rgba(0,0,0,0.5);
+            border-radius: 50%; /* 优化样式，增加点击区域 */
+            z-index: 10001;
         }
 
         /* 表格区域独立背景容器（保持原有） */
@@ -1012,7 +354,7 @@
             pointer-events: none;
             z-index: 3;
         }
-        /* 核心优化3：纵向滚动容器终极优化 */
+        /* 纵向滚动容器 - 终极修复，解决滑不到底/卡顿 */
         .table-scroll-container {
             position: absolute;
             top: var(--title-container-pc-height);
@@ -1024,20 +366,16 @@
             -webkit-overflow-scrolling: touch;
             padding: 15px;
             box-sizing: border-box;
-            /* 纵向滚动惯性 */
             scroll-behavior: smooth;
-            /* 解决纵向与横向滚动冲突 */
             overscroll-behavior-y: contain;
-            /* 只允许纵向滚动，禁用其他手势 */
             touch-action: pan-y;
-            /* 硬件加速，减少滚动卡顿 */
+            /* 硬件加速+性能优化 */
             transform: translateZ(0);
             will-change: scroll-position;
-            /* 优化滚动性能，减少重绘 */
-            contain: layout paint size;
+            contain: layout paint size; /* 限制重绘范围 */
         }
 
-        /* 移动端适配（768px以下）核心优化 */
+        /* 移动端适配（768px以下）- 修复所有细节问题 */
         @media (max-width: 768px) {
             body {
                 padding: 5px;
@@ -1045,7 +383,6 @@
             }
             .device-box {
                 padding: 0;
-                position: relative;
                 width: 100%;
                 height: 100vh;
                 overflow: hidden;
@@ -1053,11 +390,11 @@
             h2 {
                 font-size: 1rem;
                 margin: 10px 0;
+                padding-bottom: 6px;
             }
             th, td {
                 padding: 6px 4px;
                 font-size: 12px;
-                border: var(--table-border-width) solid var(--table-border-color);
             }
             .custom-logo {
                 left: var(--logo-mobile-left);
@@ -1078,34 +415,34 @@
             #checkTable .img-cell, #replaceTable .img-cell, #repairTable .img-cell {
                 width: var(--img-cell-mobile-width);
                 height: var(--img-cell-mobile-height);
-                overflow: hidden;
-            }
-            .no-img {
-                line-height: var(--img-cell-mobile-height);
             }
             #deviceBaseInfoTable .device-img-cell {
                 width: var(--device-img-cell-mobile-width);
                 height: var(--device-img-cell-mobile-height);
             }
-            #deviceBaseInfoTable .no-img {
-                line-height: var(--device-img-cell-mobile-height);
-                font-size: 12px;
-            }
             .table-bg-container {
                 top: var(--title-container-mobile-height);
                 height: calc(100vh - var(--title-container-mobile-height));
-                width: var(--title-container-width);
             }
             .table-scroll-container {
                 top: var(--title-container-mobile-height);
                 height: calc(100vh - var(--title-container-mobile-height));
                 padding: 10px;
-                left: 0;
-                width: 100%;
+            }
+            /* 移动端图片预览优化 */
+            .img-preview-modal {
+                padding: 15px;
+            }
+            .close-preview {
+                top: -35px;
+                font-size: 24px;
+                width: 30px;
+                height: 30px;
+                line-height: 30px;
             }
         }
 
-        /* 平板适配（保持原有） */
+        /* 平板适配（保持原有，无问题） */
         @media (min-width: 769px) and (max-width: 1024px) {
             :root {
                 --logo-pc-width: 120px;
@@ -1220,6 +557,7 @@
             }
         };
 
+        // 生成表格容器（原有无问题，保留）
         function generateRecordTablesHtml() {
             const container = document.getElementById('recordTablesContainer');
             let html = '';
@@ -1231,6 +569,7 @@
             container.innerHTML = html;
         }
 
+        // 渲染表格数据（修复空图片单元格布局）
         function renderTable(tableKey) {
             const config = RECORD_TABLE_CONFIGS[tableKey];
             const table = document.getElementById(config.tableId);
@@ -1259,6 +598,7 @@
                 row.innerHTML = cellHtml;
             });
 
+            // 空数据处理（原有无问题）
             if (rowsData.length === 0) {
                 const emptyRow = table.insertRow(-1);
                 const emptyCell = emptyRow.insertCell(0);
@@ -1269,66 +609,98 @@
             }
         }
 
+        // 图片预览（修复重复点击导致的样式问题）
         function openImgPreview(imgSrc) {
             const modal = document.getElementById('imgPreviewModal');
             const previewImg = document.getElementById('previewImg');
             previewImg.src = imgSrc;
+            previewImg.alt = "图片预览";
             modal.style.display = "flex";
             document.body.style.overflow = "hidden";
+            // 防止图片加载慢导致的空白
+            previewImg.onload = function() {
+                modal.style.display = "flex";
+            }
         }
         function closeImgPreview() {
             const modal = document.getElementById('imgPreviewModal');
+            const previewImg = document.getElementById('previewImg');
             modal.style.display = "none";
             document.body.style.overflow = "auto";
+            previewImg.src = ""; // 清空图片，避免缓存问题
         }
 
+        // 渲染所有表格（原有无问题）
         function renderAllTables() {
             for (const tableKey in RECORD_TABLE_CONFIGS) {
                 renderTable(tableKey);
             }
         }
 
-        // 核心优化4：JS层面优化滚动性能
+        // 页面加载完成执行 - 修复所有JS逻辑问题
         window.onload = function() {
+            // 1. 先生成容器，再渲染表格，保证DOM存在
             generateRecordTablesHtml();
             renderAllTables();
-            document.getElementById('closePreviewBtn').addEventListener('click', closeImgPreview);
+
+            // 2. 图片预览事件绑定（修复重复绑定）
+            document.getElementById('closePreviewBtn').addEventListener('click', function(e) {
+                e.stopPropagation();
+                closeImgPreview();
+            });
             document.addEventListener('keydown', function(e) {
                 if (e.key === 'Escape') closeImgPreview();
             });
 
-            // 优化1：预加载表格图片，避免滚动时加载卡顿
+            // 3. 预加载所有图片，解决滚动加载卡顿
             const preloadImages = () => {
-                const imgUrls = [];
+                const imgUrls = new Set(); // 用Set去重，避免重复加载
+                imgUrls.add('device-main.jpg'); // 基础图片
+                // 遍历所有表格图片
                 for (const tableKey in RECORD_TABLE_CONFIGS) {
                     const rows = RECORD_TABLE_CONFIGS[tableKey].rows || [];
                     rows.forEach(row => {
-                        if (row.img) imgUrls.push(row.img);
+                        if (row.img) imgUrls.add(row.img);
                     });
                 }
-                imgUrls.push('device-main.jpg');
-                imgUrls.forEach(url => {
+                // 批量预加载
+                Array.from(imgUrls).forEach(url => {
                     const img = new Image();
                     img.src = url;
+                    img.crossOrigin = 'anonymous'; // 解决跨域图片缓存问题
                 });
             };
             preloadImages();
 
-            // 优化2：禁用滚动时的图片hover效果，减少重绘
+            // 4. 滚动监听 - 解决滚动时hover/点击干扰，核心优化
             const scrollContainer = document.querySelector('.table-scroll-container');
-            let isScrolling = false;
-            scrollContainer.addEventListener('scroll', () => {
-                if (!isScrolling) {
-                    document.body.classList.add('is-scrolling');
-                }
-                clearTimeout(window.scrollTimer);
-                window.scrollTimer = setTimeout(() => {
-                    isScrolling = false;
+            let scrollTimer = null;
+            scrollContainer.addEventListener('scroll', function() {
+                // 滚动开始：添加类，禁用所有交互和过渡
+                document.body.classList.add('is-scrolling');
+                // 清除定时器，避免重复执行
+                clearTimeout(scrollTimer);
+                // 滚动停止100ms后：移除类，恢复交互
+                scrollTimer = setTimeout(() => {
                     document.body.classList.remove('is-scrolling');
                 }, 100);
+            }, { passive: true }); // 被动监听，提升滚动性能
+
+            // 5. 横向滚动容器同样添加滚动监听
+            const horizontalContainers = document.querySelectorAll('.table-container');
+            horizontalContainers.forEach(container => {
+                container.addEventListener('scroll', function() {
+                    document.body.classList.add('is-scrolling');
+                    clearTimeout(scrollTimer);
+                    scrollTimer = setTimeout(() => {
+                        document.body.classList.remove('is-scrolling');
+                    }, 100);
+                }, { passive: true });
             });
         };
+
+        // 解决移动端触摸延迟问题
+        document.addEventListener('touchstart', function() {}, { passive: true });
     </script>
 </body>
 </html>
-
