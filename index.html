@@ -5,13 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>设备资产信息管理</title>
     <style>
-        /* ========== 全局配置变量（新增：中间容器背景配置）========== */
+        /* ========== 全局配置变量（新增：中间表头透明度可调）========== */
         :root {
             /* LOGO PC端配置 */
             --logo-pc-width: 200px;
             --logo-pc-height: 200px;
             --logo-pc-left: 10px;
-            --logo-pc-top: 15%;
+            --logo-pc-top: 200px;
             
             /* LOGO 移动端配置 */
             --logo-mobile-width: 70px;
@@ -26,7 +26,7 @@
             --title-color: #333;
 
             /* 标题背景容器大小配置 */
-            --title-container-pc-height: 220px;
+            --title-container-pc-height: 150px;
             --title-container-mobile-height: 120px;
             --title-container-width: 100%;
 
@@ -39,29 +39,29 @@
             --img-cell-mobile-width: 150px;
             --img-cell-mobile-height: 50px;
             --img-fit-mode: cover;
-            /* 新增：设备主体图片单元格尺寸（PC+移动端） */
+            /* 设备主体图片单元格尺寸（PC+移动端） */
             --device-img-cell-pc-width: 500px;
             --device-img-cell-pc-height: 240px;
             --device-img-cell-mobile-width: 300px;
             --device-img-cell-mobile-height: 160px;
             
             /* 其他基础配置 */
-            --bg-opacity: 0.8;
+            --bg-opacity: 1;
 
-            /* ===== 新增配置项（核心优化）===== */
+            /* 核心优化配置项 */
             --content-bg-img: url("bgbj.jpg"); /* 标题下背景图片（自行替换路径） */
-            --content-bg-opacity: 0.8; /* 标题下背景透明度（0-1，越小越淡） */
-            --table-border-width: 2px; /* 表格框线粗细（加粗，原1px） */
+            --content-bg-opacity: 0.8; /* 标题下背景透明度（0-1） */
+            --table-border-width: 2px; /* 表格框线粗细 */
             --table-border-color: #ccc; /* 表格框线颜色 */
             --th-bg-opacity: 0.5; /* 表头单元格底色透明度 */
             --td-bg-opacity: 0.5; /* 内容单元格底色透明度 */
-            /* 新增：中间可调背景容器配置（可直接修改） */
+            /* 中间可调背景容器配置（可直接修改） */
             --middle-container-bg: url("bgbj.jpg"); /* 中间容器背景图（自行替换） */
             --middle-container-opacity: 0.8; /* 中间容器背景透明度 */
             --middle-header-height: 60px; /* 中间表头容器高度 */
-            --middle-header-bg: #f8f8f8; /* 中间表头背景色 */
             --middle-header-color: #333; /* 中间表头文字颜色 */
             --middle-header-font-size: 1.4rem; /* 中间表头文字大小 */
+            --middle-header-opacity: 0; /* 【核心】中间表头透明度（0-1自由可调） */
         }
 
         * {
@@ -77,7 +77,6 @@
             padding: 10px;
             background-color: #f5f5f5;
             font-size: 14px;
-            /* 移除body默认滚动，由中间容器承担 */
             overflow: hidden;
             height: 100vh;
         }
@@ -87,7 +86,6 @@
             border-radius: 8px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.08);
             margin-bottom: 15px;
-            /* 设备盒子占满剩余高度 */
             height: calc(100vh - 20px);
             display: flex;
             flex-direction: column;
@@ -99,7 +97,7 @@
             border-bottom: 1px solid #eee;
             font-size: 1.2rem;
             position: relative;
-            z-index: 2; /* 保证标题层级高于背景 */
+            z-index: 2;
         }
         /* 表格容器：移动端横向滚动 */
         .table-container {
@@ -108,37 +106,35 @@
             -webkit-overflow-scrolling: touch;
             margin: 10px 0;
             position: relative;
-            z-index: 2; /* 保证表格层级高于背景 */
+            z-index: 2;
         }
         table {
             width: 100%;
             min-width: 600px;
             border-collapse: collapse;
             position: relative;
-            z-index: 2; /* 保证表格层级高于背景 */
+            z-index: 2;
         }
-        /* ===== 表格样式核心修改 ===== */
+        /* 表格样式核心配置 */
         th, td {
-            border: var(--table-border-width) solid var(--table-border-color); /* 加粗框线+变量控制 */
+            border: var(--table-border-width) solid var(--table-border-color);
             padding: 8px 6px;
             text-align: center !important;
             vertical-align: middle;
             font-size: 13px;
             position: relative;
-            z-index: 2; /* 保证单元格内容层级最高 */
+            z-index: 2;
         }
         th {
-            /* 表头底色+独立透明度，与其他背景无关联 */
             background-color: rgba(248, 248, 248, var(--th-bg-opacity));
             white-space: nowrap;
         }
         td {
-            /* 内容单元格底色+独立透明度，与其他背景无关联 */
             background-color: rgba(255, 255, 255, var(--td-bg-opacity));
             word-break: break-all;
         }
 
-        /* ========== 表格列宽统一配置 ========== */
+        /* 表格列宽统一配置 */
         #checkTable th:nth-child(1), #checkTable td:nth-child(1),
         #replaceTable th:nth-child(1), #replaceTable td:nth-child(1),
         #repairTable th:nth-child(1), #repairTable td:nth-child(1) {
@@ -157,15 +153,14 @@
             width: var(--remark-col-width);
         }
 
-        /* ========== 图片单元格统一尺寸+图片铺满 + 核心修复：hover不抖动 ========== */
+        /* 图片单元格统一样式 + hover不抖动修复 */
         #checkTable .img-cell, #replaceTable .img-cell, #repairTable .img-cell {
             width: var(--img-cell-pc-width);
             height: var(--img-cell-pc-height);
             padding: 0 !important;
             vertical-align: middle;
-            overflow: hidden; /* 核心1：隐藏图片缩放超出部分，避免撑大单元格 */
+            overflow: hidden;
         }
-        /* 新增：设备主体图片单元格样式（独立尺寸，PC+移动端适配） */
         #deviceBaseInfoTable .device-img-cell {
             width: var(--device-img-cell-pc-width);
             height: var(--device-img-cell-pc-height);
@@ -184,10 +179,10 @@
             border: 1px solid #eee;
             transition: all 0.2s;
             display: block;
-            transform-origin: center center; /* 核心2：设置缩放原点为图片中心，无位移 */
+            transform-origin: center center;
         }
         .table-img:hover {
-            transform: scale(1.05); /* 保留缩放效果，无位移不抖动 */
+            transform: scale(1.05);
             border-color: #2196F3;
         }
         .no-img {
@@ -198,13 +193,12 @@
             height: 100%;
             line-height: var(--img-cell-pc-height);
         }
-        /* 新增：设备主体图片无图提示（适配独立单元格高度） */
         #deviceBaseInfoTable .no-img {
             line-height: var(--device-img-cell-pc-height);
             font-size: 14px;
         }
 
-        /* ========== LOGO+标题布局 ========== */
+        /* LOGO+标题布局 */
         .title-container {
             position: relative;
             margin-bottom: 20px;
@@ -219,10 +213,8 @@
             background-size: 100% 100%;
             background-color: transparent;
             z-index: 2;
-            /* 标题容器不压缩 */
             flex-shrink: 0;
         }
-        /* 背景透明遮罩层 */
         .bg-mask {
             position: absolute;
             top: 0;
@@ -234,7 +226,6 @@
             pointer-events: none;
             z-index: 1;
         }
-        /* LOGO样式 */
         .custom-logo {
             position: absolute;
             left: var(--logo-pc-left);
@@ -245,7 +236,6 @@
             object-fit: contain;
             z-index: 3;
         }
-        /* 标题核心样式 */
         .main-title {
             margin: 0;
             padding: 0 20px;
@@ -294,21 +284,16 @@
             line-height: 35px;
         }
 
-        /* ===== 核心新增：标题与表格之间的可调背景中间容器 ===== */
+        /* 标题与表格之间的可调背景中间容器 */
         .middle-bg-container {
             position: relative;
             width: 100%;
-            /* 占满设备盒子剩余高度 */
             flex: 1;
             border-radius: 8px;
             overflow: hidden;
             z-index: 1;
-            /* 固定容器：不随表格滚动 */
-            position: relative;
-            top: 0;
-            left: 0;
         }
-        /* 中间容器背景层：可自定义背景图/颜色，独立透明度 */
+        /* 中间容器背景层 */
         .middle-bg-layer {
             position: absolute;
             top: 0;
@@ -321,24 +306,23 @@
             z-index: 1;
             pointer-events: none;
         }
-        /* 核心新增：中间表头容器（固定在中间容器顶部，不滚动） */
+        /* 中间表头容器（核心：透明度可调+固定顶部） */
         .middle-header {
             position: relative;
             z-index: 3;
             height: var(--middle-header-height);
-            background-color: var(--middle-header-bg);
+            background-color: rgba(250, 250, 250, var(--middle-header-opacity));
             display: flex;
             align-items: center;
             justify-content: center;
             padding: 0 20px;
             border-bottom: 2px solid var(--table-border-color);
-            /* 表头文字样式 */
             color: var(--middle-header-color);
             font-size: var(--middle-header-font-size);
             font-weight: 700;
             white-space: nowrap;
         }
-        /* 核心新增：表格滚动容器（仅此处纵向滚动，表格区域专属） */
+        /* 表格专属滚动容器 */
         .table-scroll-container {
             position: relative;
             z-index: 2;
@@ -347,7 +331,7 @@
             -webkit-overflow-scrolling: touch;
             padding: 15px;
         }
-        /* 原内容背景容器：适配新结构，仅保留层级 */
+        /* 原内容背景容器适配新结构 */
         .content-bg-container {
             position: relative;
             width: 100%;
@@ -356,7 +340,6 @@
             margin: 0;
             z-index: 2;
         }
-        /* 原内容背景遮罩：适配新结构 */
         .content-bg-mask {
             position: absolute;
             top: 0;
@@ -366,9 +349,8 @@
             background-color: #fff;
             opacity: calc(1 - var(--content-bg-opacity));
             pointer-events: none;
-            z-index: 1; /* 遮罩层级低于表格/标题 */
+            z-index: 1;
         }
-        /* 原内容主体：适配新结构，占满滚动容器 */
         .content-main {
             position: relative;
             z-index: 2;
@@ -378,7 +360,7 @@
             margin: 0;
         }
 
-        /* ========== 移动端适配（768px以下）========== */
+        /* 移动端适配（768px以下） */
         @media (max-width: 768px) {
             body {
                 padding: 5px;
@@ -400,7 +382,7 @@
                 border: var(--table-border-width) solid var(--table-border-color);
             }
 
-            /* 移动端LOGO配置 */
+            /* 移动端LOGO/标题适配 */
             .custom-logo {
                 left: var(--logo-mobile-left);
                 top: var(--logo-mobile-top);
@@ -410,23 +392,20 @@
             .main-title {
                 font-size: var(--title-mobile-font-size);
             }
-
-            /* 移动端标题背景容器大小适配 */
             .title-container {
                 height: var(--title-container-mobile-height);
                 margin-bottom: 10px;
             }
 
-            /* 移动端图片单元格适配 + 同步修复hover不抖动 */
+            /* 移动端图片单元格适配 */
             #checkTable .img-cell, #replaceTable .img-cell, #repairTable .img-cell {
                 width: var(--img-cell-mobile-width);
                 height: var(--img-cell-mobile-height);
-                overflow: hidden; /* 移动端同步生效 */
+                overflow: hidden;
             }
             .no-img {
                 line-height: var(--img-cell-mobile-height);
             }
-            /* 移动端设备主体图片单元格尺寸适配 */
             #deviceBaseInfoTable .device-img-cell {
                 width: var(--device-img-cell-mobile-width);
                 height: var(--device-img-cell-mobile-height);
@@ -436,11 +415,12 @@
                 font-size: 12px;
             }
 
-            /* 移动端中间容器配置适配 */
+            /* 移动端中间容器适配 + 表头透明度优化 */
             :root {
                 --middle-header-height: 45px;
                 --middle-header-font-size: 1.1rem;
                 --middle-container-opacity: 0.8;
+                --middle-header-opacity: 0.9; /* 移动端提升透明度，保证文字可读性 */
             }
             .table-scroll-container {
                 padding: 10px;
@@ -455,7 +435,6 @@
                 --img-cell-pc-width: 60px;
                 --img-cell-pc-height: 60px;
                 --title-pc-font-size: 1.8rem;
-                /* 平板可单独调整背景/表格样式 + 设备图片单元格尺寸 */
                 --content-bg-opacity: 0.2;
                 --table-border-width: 1.5px;
                 --device-img-cell-pc-width: 150px;
@@ -463,6 +442,7 @@
                 /* 平板中间容器配置 */
                 --middle-header-height: 50px;
                 --middle-header-font-size: 1.2rem;
+                --middle-header-opacity: 0.85; /* 平板端中等透明度 */
             }
             h2 {
                 font-size: 1.1rem;
@@ -476,36 +456,31 @@
         <!-- 原有标题区域：保持不变 -->
         <div class="title-container">
             <div class="bg-mask"></div>
-            <img src="logo.jpg" class="custom-logo" alt="设备管理系统LOGO">
-            <h1 class="main-title"></h1>
+            <img src="logo.jpg" class="custom-logo" alt="设备管理系统LOGO">            
         </div>
-
-        <!-- 核心新增：标题与表格之间的可调背景中间容器（固定不滚动） -->
+        <!-- 标题与表格之间的可调背景中间容器 -->
         <div class="middle-bg-container">
             <!-- 中间容器背景层：可自定义背景图/颜色 -->
             <div class="middle-bg-layer"></div>
-            <!-- 核心新增：中间表头容器（固定顶部，不滚动） -->
+            <!-- 中间表头容器（设备全生命周期记录台账）：透明度可调 -->
             <div class="middle-header">设备全生命周期记录台账</div>
-            <!-- 核心新增：表格专属滚动容器（仅此处纵向滚动） -->
+            <!-- 表格专属滚动容器（仅此处纵向滚动） -->
             <div class="table-scroll-container">
                 <!-- 原有内容背景容器：结构不变，适配新层级 -->
                 <div class="content-bg-container">
-                    <!-- 背景遮罩：独立控制透明度，不影响表格 -->
+                    <!-- 背景遮罩：独立控制透明度 -->
                     <div class="content-bg-mask"></div>
-                    <!-- 内容主体：承载所有表格，层级最高 -->
+                    <!-- 内容主体：承载所有表格 -->
                     <div class="content-main">
-                        <!-- 基础资产信息（新增设备主体图片列+合并单元格） -->
+                        <!-- 基础资产信息 -->
                          <h2>基础资产信息</h2>
                         <div class="table-container">
                             <table id="deviceBaseInfoTable">
                                 <tr>
                                     <th>设备编号</th><td>ZQXN-2026-001</td>
-                                    <!-- 新增：设备主体图片表头 + 单元格合并（跨6行） -->
                                     <th rowspan="6">设备主体</th>
                                     <td rowspan="6" class="device-img-cell">
-                                        <!-- 设备主体图片：替换src为实际图片路径，保留预览功能 -->
                                         <img src="device-main.jpg" alt="设备主体图片" class="table-img" onclick="openImgPreview('device-main.jpg')">
-                                        <!-- 无图时替换为：<span class="no-img">暂无设备图片</span> -->
                                     </td>
                                 </tr>
                                 <tr><th>设备名称</th><td>挤压设备</td></tr>
@@ -516,7 +491,7 @@
                             </table>
                         </div>
 
-                        <!-- 动态生成的记录表区域（原有结构不变） -->
+                        <!-- 动态生成的记录表区域 -->
                         <div id="recordTablesContainer"></div>
                     </div>
                 </div>
@@ -524,7 +499,7 @@
         </div>
     </div>
 
-    <!-- 图片预览弹窗（原有结构不变，兼容新图片预览） -->
+    <!-- 图片预览弹窗 -->
     <div class="img-preview-modal" id="imgPreviewModal" onclick="closeImgPreview()">
         <div class="img-preview-content" onclick="event.stopPropagation()">
             <span class="close-preview" id="closePreviewBtn">&times;</span>
@@ -639,7 +614,7 @@
             }
         }
 
-        // 图片预览相关（原有功能不变，兼容新添加的设备主体图片）
+        // 图片预览相关
         function openImgPreview(imgSrc) {
             const modal = document.getElementById('imgPreviewModal');
             const previewImg = document.getElementById('previewImg');
