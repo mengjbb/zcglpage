@@ -78,7 +78,8 @@
             background-color: #f5f5f5;
             font-size: 14px;
             overflow: hidden;
-            height: 100vh;
+            min-height: 100vh; /* 【优化】改为min-height，兼容移动端浏览器 */
+            height: 100dvh; /* 【优化】使用dvh单位，解决iOS划不到底问题 */
         }
         .device-box {
             background: #fff;
@@ -86,7 +87,8 @@
             border-radius: 8px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.08);
             margin-bottom: 15px;
-            height: calc(100vh - 20px);
+            min-height: calc(100dvh - 20px); /* 【优化】使用dvh单位 */
+            height: calc(100dvh - 20px); /* 【优化】使用dvh单位 */
             display: flex;
             flex-direction: column;
         }
@@ -292,6 +294,8 @@
             border-radius: 8px;
             overflow: hidden;
             z-index: 1;
+            display: flex;
+            flex-direction: column;
         }
         /* 中间容器背景层 */
         .middle-bg-layer {
@@ -326,7 +330,8 @@
         .table-scroll-container {
             position: relative;
             z-index: 2;
-            height: calc(100% - var(--middle-header-height));
+            flex: 1;
+            min-height: 0; /* 【优化】确保flex子元素可以滚动 */
             overflow-y: auto;
             -webkit-overflow-scrolling: touch;
             padding: 15px;
@@ -365,12 +370,14 @@
             body {
                 padding: 5px;
                 font-size: 13px;
-                height: 100vh;
+                min-height: 100vh;
+                height: 100dvh; /* 【优化】使用dvh单位 */
             }
             .device-box {
                 padding: 10px;
                 margin-bottom: 10px;
-                height: calc(100vh - 10px);
+                min-height: calc(100dvh - 10px); /* 【优化】使用dvh单位 */
+                height: calc(100dvh - 10px); /* 【优化】使用dvh单位 */
             }
             h2 {
                 font-size: 1rem;
@@ -420,7 +427,7 @@
                 --middle-header-height: 45px;
                 --middle-header-font-size: 1.1rem;
                 --middle-container-opacity: 0.8;
-                --middle-header-opacity: 0.9; /* 移动端提升透明度，保证文字可读性 */
+                --middle-header-opacity: 0; /* 【优化】移动端表头背景完全透明 */
             }
             .table-scroll-container {
                 padding: 10px;
@@ -644,6 +651,18 @@
             document.addEventListener('keydown', function(e) {
                 if (e.key === 'Escape') closeImgPreview();
             });
+            
+            // 【优化】修复移动端浏览器高度计算问题
+            function fixMobileHeight() {
+                if ('ontouchstart' in window || navigator.maxTouchPoints > 0) {
+                    const vh = window.innerHeight * 0.01;
+                    document.documentElement.style.setProperty('--vh', `${vh}px`);
+                }
+            }
+            
+            // 初始化和窗口调整时修复高度
+            fixMobileHeight();
+            window.addEventListener('resize', fixMobileHeight);
         }
     </script>
 </body>
