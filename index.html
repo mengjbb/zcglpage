@@ -50,7 +50,7 @@
 
             /* 核心优化配置项 */
             --content-bg-img: url("bgbj.jpg"); /* 标题下背景图片（自行替换路径） */
-            --content-bg-opacity: 0.8; /* 标题下背景透明度（0-1） */
+            --content-bg-opacity: 0; /* 【修改】标题下背景透明度改为0，去掉朦胧感 */
             --table-border-width: 2px; /* 表格框线粗细 */
             --table-border-color: #ccc; /* 表格框线颜色 */
             --th-bg-opacity: 0.5; /* 表头单元格底色透明度 */
@@ -346,7 +346,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: #fff;
+            background-color: transparent; /* 【修改】改为透明，去掉朦胧感 */
             opacity: calc(1 - var(--content-bg-opacity));
             pointer-events: none;
             z-index: 1;
@@ -435,7 +435,7 @@
                 --img-cell-pc-width: 60px;
                 --img-cell-pc-height: 60px;
                 --title-pc-font-size: 1.8rem;
-                --content-bg-opacity: 0.2;
+                --content-bg-opacity: 0; /* 【修改】平板端也改为0 */
                 --table-border-width: 1.5px;
                 --device-img-cell-pc-width: 150px;
                 --device-img-cell-pc-height: 200px;
@@ -451,6 +451,7 @@
     </style>
 </head>
 <body>
+    <!-- 省略HTML内容，保持不变 -->
     <!-- 设备信息展示模块 -->
     <div class="device-box">
         <!-- 原有标题区域：保持不变 -->
@@ -468,7 +469,7 @@
             <div class="table-scroll-container">
                 <!-- 原有内容背景容器：结构不变，适配新层级 -->
                 <div class="content-bg-container">
-                    <!-- 背景遮罩：独立控制透明度 -->
+                    <!-- 背景遮罩：已改为透明 -->
                     <div class="content-bg-mask"></div>
                     <!-- 内容主体：承载所有表格 -->
                     <div class="content-main">
@@ -647,8 +648,3 @@
     </script>
 </body>
 </html>
-
-
-
-
-
